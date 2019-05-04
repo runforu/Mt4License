@@ -1,0 +1,16 @@
+
+// server keystor
+keytool -genkey -v -alias mt4ssl        -storetype PKCS12 -keyalg RSA -keysize 4096 -keystore keystore.p12        -validity 7300
+
+// client truststore
+keytool -genkey -v -alias mt4ssl_client -storetype PKCS12 -keyalg RSA -keysize 4096 -keystore client_keystore.p12 -validity 7300  
+
+// export server certificate
+keytool -export -alias mt4ssl -keystore keystore.p12 -file server.cer 
+
+// import server certificate to server key store
+keytool -import -trustcacerts -alias mt4ssl -file server.cer -keystore client_truststore.p12   
+
+
+// C++ use openssl, openssl use pem format
+openssl x509 -inform der -in server.cer -out server.pem
