@@ -3,6 +3,9 @@ package mt4.license.com.entity;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.validation.constraints.NotEmpty;
+
+import org.hibernate.validator.constraints.Length;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -29,6 +32,9 @@ public class License implements Serializable {
 
     private String key;
 
+    @NotEmpty(message = "Company name cannot be empty")
+    @Length(min = 6, message = "Company name must not be shorter than 6")
+    @Length(max = 32, message = "Company name must not be longer than 32")
     private String company;
 
     private String comment;

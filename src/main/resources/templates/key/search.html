@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-<html
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	xmlns:th="http://www.thymeleaf.org"
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org"
 	layout:decorate="~{fragments/layout}">
 <head>
 <title>Search</title>
@@ -18,7 +16,7 @@
                     $("#table_refresh").html(html);
                 },
                 failure: function () {
-                    alert("error");
+                    location.reload();
                 }
             })
         }
@@ -35,57 +33,37 @@
                 async: false,
                 success: function (json) {
                     data[index].enable = json.enable;
+                    $(element).text(json.enable ? 'Disable': 'Enable');
                     $(element).parent().parent().children("td")[5].innerHTML = json.enable ? "<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
-                        : "<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>"
+                        : "<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>";
                 },
                 failure: function () {
-                    alert("error");
+                    location.reload();
                 }
             });
         }
 
         function editLicense(index) {
-        	var form = $("<form method='post'></form>");
-        	var input= $("<input type='hidden'>");
+        	var form= $("<form method='post' action='/edit'><input type='hidden' name='query' value=" + [[${licenses}]][index].key + "></form>");
             $(document.body).append(form);
-            form.attr({"action":"/edit"});
-            input.attr({"name":"query"});
-            input.val([[${licenses}]][index].key);
-            form.append(input);
             form.submit();
         }
 </script>
 </head>
 <body>
-	<div
-		layout:fragment="content"
-		th:remove="tag">
+	<div layout:fragment="content" th:remove="tag">
 		<div class="row">
 			<div class="col-md-10 col-md-offset-1">
-				<form class="form-inline">
-					<div
-						style="padding: 0px 32px 0px 16px;"
-						class="form-group">
-						<label for="search_input">Key or Company name</label>
-						<input
-							type="text"
-							class="form-control"
-							id="search_input"
-							placeholder="Key or @Company name">
+				<form class="form-inline" onsubmit="return false;">
+					<div style="padding: 0px 32px 0px 16px;" class="form-group">
+						<label style="font-size: large; color: #288bf6" for="search_input">Key or Company name</label>
+						<input type="text" class="form-control" id="search_input" placeholder="Key or @Company name">
 					</div>
-					<button
-						type="button"
-						class="btn btn-primary"
-						th:onclick="enquiry()">
-						<span
-							class="glyphicon glyphicon-search"
-							aria-hidden="true"></span>
+					<button type="submit" class="btn btn-primary" th:onclick="enquiry()">
+						<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
 					</button>
 				</form>
-				<div
-					id="table_refresh"
-					style="margin-top: 40px"
-					th:fragment="table_refresh">
+				<div id="table_refresh" style="margin-top: 40px" th:fragment="table_refresh">
 					<table class="table .table-hover">
 						<thead>
 							<tr style="font-weight: bold;">
@@ -95,7 +73,7 @@
 								<td th:text="'Expiration Date'" />
 								<td th:text="'Comment'" />
 								<td th:text="'State'" />
-								<td th:text="'Operation'" />
+								<td th:text="'Operations'" />
 							</tr>
 						</thead>
 						<tbody>
@@ -104,25 +82,14 @@
 								<td th:text="*{license.key}" />
 								<td th:text="*{license.company}" />
 								<td th:text="*{#dates.format(license.expirationDate, 'yyyy-MM-dd')}" />
-								<td th:text="*{license.comment}" />
-								<td><span
-										th:if="${license.enable}"
-										class="glyphicon glyphicon-ok"
-										aria-hidden="true"></span> <span
-										th:unless="${license.enable}"
-										class="glyphicon glyphicon-remove"
-										aria-hidden="true"></span></td>
+								<td th:text="*{#strings.abbreviate(license.comment, 12)}" />
+								<td><span th:if="${license.enable}" class="glyphicon glyphicon-ok" aria-hidden="true"></span> <span
+										th:unless="${license.enable}" class="glyphicon glyphicon-remove" aria-hidden="true"></span></td>
 								<td>
-									<button
-										type="button"
-										style="padding: 0px; display: inline-block;"
-										class="btn btn-link"
-										th:text="*{license.enable} ? 'Disable' : 'Enable'"
-										th:onclick="toggle(this, [[${licenseStat.index}]]);"></button> <span style="padding: 0px 8px;">|</span>
-									<button
-										type="submit"
-										style="padding: 0px;"
-										class="btn btn-link"
+									<button type="button" style="padding: 0px; width: 48px; display: inline-block;" class="btn btn-link"
+										th:text="*{license.enable} ? 'Disable' : 'Enable'" th:onclick="toggle(this, [[${licenseStat.index}]]);"></button>
+									<span style="padding: 0px 8px;">|</span>
+									<button type="submit" style="padding: 0px;" class="btn btn-link"
 										th:onclick="editLicense([[${licenseStat.index}]]);">Edit</button>
 								</td>
 							</tr>

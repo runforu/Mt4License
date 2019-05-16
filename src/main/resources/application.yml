@@ -1,5 +1,5 @@
 server.port: 443
-http.port: 80
+
 server.tomcat.max-threads: 64
 server.tomcat.max-connections: 64
 

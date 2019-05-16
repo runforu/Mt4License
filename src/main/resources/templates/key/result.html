@@ -7,7 +7,7 @@
 <body>
 	<div layout:fragment="content" th:remove="tag">
 		<div class="row">
-			<div class="col-md-8 col-md-offset-2">
+			<div class="col-md-10 col-md-offset-1">
 				<div th:if="${#ctx.containsVariable('error')}">
 					<div class="alert alert-danger" th:text="${message}">Failure in adding key</div>
 				</div>
@@ -30,7 +30,7 @@
 								<td th:text="*{key}" />
 								<td th:text="*{company}" />
 								<td th:text="*{#dates.format(expirationDate, 'yyyy-MM-dd')}" />
-								<td th:text="*{comment}" />
+								<td th:text="*{#strings.abbreviate(comment,12)}" />
 								<td th:text="*{enable} ? 'Enabled' : 'Disabled'" />
 							</tr>
 						</tbody>

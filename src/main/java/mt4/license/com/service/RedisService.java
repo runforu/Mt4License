@@ -2,6 +2,7 @@ package mt4.license.com.service;
 
 import java.util.Set;
 
+import mt4.license.com.entity.AccessInfo;
 import mt4.license.com.entity.License;
 
 public interface RedisService {
@@ -19,4 +20,8 @@ public interface RedisService {
     public Set<License> listAll();
 
     public Set<License> searchByCompany(String name);
+
+    public boolean update(AccessInfo accessInfo);
+
+    public boolean get(AccessInfo accessInfo);
 }

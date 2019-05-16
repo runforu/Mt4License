@@ -12,9 +12,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AppConfig {
 
-    @Value("${http.port}")
-    Integer httpPort;
-
     @Value("${server.port}")
     Integer serverPort;
 
@@ -40,7 +37,7 @@ public class AppConfig {
     private Connector getHttpConnector() {
         Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
         connector.setScheme("http");
-        connector.setPort(httpPort);
+        connector.setPort(80);
         connector.setSecure(false);
         connector.setRedirectPort(serverPort);
         return connector;

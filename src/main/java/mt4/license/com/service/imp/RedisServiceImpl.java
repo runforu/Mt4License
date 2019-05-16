@@ -9,6 +9,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
+import mt4.license.com.entity.AccessInfo;
 import mt4.license.com.entity.License;
 import mt4.license.com.service.RedisService;
 
@@ -96,6 +97,26 @@ public class RedisServiceImpl implements RedisService {
             set.add(license);
         }
         return set;
+    }
+
+    @Override
+    public boolean update(AccessInfo accessInfo) {
+        String key = accessInfo.getKey() + "_AI";
+        ValueOperations<String, Object> vo = redisTemplate.opsForValue();
+        vo.set(key, accessInfo);
+        return true;
+    }
+
+    @Override
+    public boolean get(AccessInfo accessInfo) {
+        ValueOperations<String, Object> vo = redisTemplate.opsForValue();
+        AccessInfo ai = (AccessInfo) vo.get(accessInfo.getKey() + "_AI");
+        if (ai != null) {
+            accessInfo.setKey(ai.getKey());
+            accessInfo.setIpList(ai.getIpList());
+            return true;
+        }
+        return false;
     }
 
 }

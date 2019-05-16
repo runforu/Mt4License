@@ -3,6 +3,7 @@ package mt4.license.com.service;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.util.Arrays;
+import java.util.Date;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -12,11 +13,17 @@ import javax.net.ssl.SSLSocket;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+import mt4.license.com.entity.License;
+
 @Configuration
 public class SslServer implements InitializingBean, DisposableBean, Runnable {
+
+    @Autowired
+    private RedisService redisService;
 
     class Accepter implements Runnable {
         private SSLSocket mSocket = null;
@@ -52,9 +59,25 @@ public class SslServer implements InitializingBean, DisposableBean, Runnable {
 
                 // read key
                 int len = dataInputStream.readInt();
-                byte[] key = new byte[len];
-                dataInputStream.read(key);
-                System.out.println(byteArrayToHexString(key));
+                byte[] keyInBytes = new byte[len];
+                dataInputStream.read(keyInBytes);
+                System.out.println(byteArrayToHexString(keyInBytes));
+
+                // Get license object
+                String key = new String(keyInBytes);
+                System.out.println("key:" + key);
+                License license = new License(key);
+                if (!redisService.get(license)) {
+                    dataOutputStream.writeInt(1);
+                    dataOutputStream.writeByte(0);
+                    return;
+                }
+
+                if (license.getExpirationDate().before(new Date())) {
+                    dataOutputStream.writeInt(1);
+                    dataOutputStream.writeByte(0);
+                    return;
+                }
 
                 // read encrypted key
                 len = dataInputStream.readInt();
@@ -62,23 +85,28 @@ public class SslServer implements InitializingBean, DisposableBean, Runnable {
                 dataInputStream.read(encryptedKey);
                 System.out.println(byteArrayToHexString(encryptedKey));
 
+                // calculate encrypted text based on key and port.
                 int port = mSocket.getPort();
-                byte[] hash = Pbdf2(new String(key).toCharArray(), key, port);
+                byte[] hash = Pbdf2(new String(keyInBytes).toCharArray(), keyInBytes, port);
                 System.out.println(byteArrayToHexString(hash));
 
                 if (!Arrays.equals(hash, encryptedKey)) {
                     dataOutputStream.writeInt(1);
                     dataOutputStream.writeByte(0);
-                } else {
-                    byte[] output = Pbdf2(new String(key).toCharArray(), key, (port + 9) / 3);
-                    System.out.println(byteArrayToHexString(output));
-                    dataOutputStream.writeInt(output.length);
-                    dataOutputStream.write(output);
+                    return;
                 }
 
-                mSocket.close();
+                // write new encrypted text to client
+                byte[] output = Pbdf2(new String(keyInBytes).toCharArray(), keyInBytes, (port + 9) / 3);
+                System.out.println(byteArrayToHexString(output));
+                dataOutputStream.writeInt(output.length);
+                dataOutputStream.write(output);
             } catch (Exception e) {
-                e.printStackTrace();
+            } finally {
+                try {
+                    mSocket.close();
+                } catch (Exception e) {
+                }
             }
         }
     }
