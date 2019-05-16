@@ -1,4 +1,4 @@
-package mt4.license.com;
+package mt4.license.com.service;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

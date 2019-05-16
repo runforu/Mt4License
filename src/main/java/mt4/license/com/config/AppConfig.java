@@ -1,4 +1,4 @@
-package mt4.license.com;
+package mt4.license.com.config;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.connector.Connector;

@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+	<th:block th:fragment="header">
+		<nav class="navbar navbar-light navbar-static-top" style="background-color: #e3f2fd;" role="navigation">
+			<div class="container-fluid">
+				<a class="navbar-brand" href="#"><img th:src="@{/img/logo.png}" width="24" height="24" alt="License Server" /></a>
+				<ul class="nav navbar-nav">
+					<li><a th:href="@{/add}">Add User</a></li>
+					<li><a th:href="@{/search}">Search</a></li>
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+					<li><a sec:authorize="isAuthenticated()" style="display: inline-block;" th:href="@{/logout}"><span
+							class="glyphicon glyphicon-log-out"></span>&nbsp;Sign Out</a></li>
+				</ul>
+			</div>
+		</nav>
+	</th:block>
+</body>
+</html>

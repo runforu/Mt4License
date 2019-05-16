@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org"
+	layout:decorate="~{fragments/layout}">
+<head>
+<title th:text="${pageTitle}"></title>
+</head>
+<body>
+	<div layout:fragment="content" th:remove="tag">
+		<div class="row">
+			<div class="col-md-8 col-md-offset-2">
+				<div th:if="${#ctx.containsVariable('error')}">
+					<div class="alert alert-danger" th:text="${message}">Failure in adding key</div>
+				</div>
+				<div th:unless="${#ctx.containsVariable('error')}">
+					<h1 th:text="${message}">Success in adding key</h1>
+					<table class="table table-striped" th:object="${license}">
+						<thead>
+							<tr>
+								<td th:text="'#'" />
+								<td th:text="'Key'" />
+								<td th:text="'Company'" />
+								<td th:text="'Expiration Date'" />
+								<td th:text="'Comment'" />
+								<td th:text="'State'" />
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td th:text="'1'" />
+								<td th:text="*{key}" />
+								<td th:text="*{company}" />
+								<td th:text="*{#dates.format(expirationDate, 'yyyy-MM-dd')}" />
+								<td th:text="*{comment}" />
+								<td th:text="*{enable} ? 'Enabled' : 'Disabled'" />
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
