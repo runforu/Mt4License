@@ -1,5 +1,6 @@
 package mt4.license.com.web;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import mt4.license.com.entity.AccessInfo;
 import mt4.license.com.entity.License;
 import mt4.license.com.service.RedisService;
 
@@ -47,7 +49,7 @@ public class MainController {
             model.addAttribute("license", license);
             return "key/add";
         }
-        if (!redisService.add(license)) {
+        if (!redisService.addLicense(license)) {
             model.addAttribute("error", "");
             model.addAttribute("message", "Failure in adding key");
         } else {
@@ -61,7 +63,7 @@ public class MainController {
     @ResponseBody
     public ResponseEntity<?> toggleState(@RequestBody License license) {
         license.setEnable(!license.isEnable());
-        if (!redisService.update(license)) {
+        if (!redisService.updateLicense(license)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         return ResponseEntity.ok(license);
@@ -69,14 +71,15 @@ public class MainController {
 
     @GetMapping("/search")
     public String search(Model model) {
-        model.addAttribute("licenses", redisService.listAll());
+        model.addAttribute("licenses", redisService.listLicense());
+        model.addAttribute("pageTitle", "Search");
         return "key/search";
     }
 
     @PostMapping("/search")
     public String search(Model model, @RequestParam("query") String key) {
-        Set<License> set = key.startsWith("@") ? redisService.searchByCompany(key.substring(1))
-                : redisService.searchByKey(key);
+        Set<License> set = key.startsWith("@") ? redisService.searchLicenseByCompany(key.substring(1))
+                : redisService.searchLicenseByKey(key);
         model.addAttribute("licenses", set);
         return "key/search::table_refresh";
     }
@@ -84,7 +87,7 @@ public class MainController {
     @PostMapping("/edit")
     public String editLicense(Model model, @RequestParam("query") String key) {
         License license = new License(key);
-        if (redisService.get(license)) {
+        if (redisService.getLicense(license)) {
             model.addAttribute("license", license);
             return "key/edit";
         } else {
@@ -94,7 +97,7 @@ public class MainController {
 
     @PostMapping("/edit_result")
     public String editResult(@ModelAttribute License license, Model model) {
-        if (!redisService.update(license)) {
+        if (!redisService.updateLicense(license)) {
             model.addAttribute("error", "");
             model.addAttribute("message", "Failure in updating key");
         } else {
@@ -102,6 +105,21 @@ public class MainController {
         }
         model.addAttribute("pageTitle", "Updating key");
         return "key/result";
+    }
+
+    @PostMapping("/history")
+    public String history(Model model, @RequestParam("query") String key) {
+        License license = new License(key);
+        List<AccessInfo> list = redisService.range(license, 0, 20);
+        if (list.size() == 0) {
+            model.addAttribute("message", "Access history is empty.");
+        } else {
+            model.addAttribute("message", "Access history");
+        }
+        model.addAttribute("key", license.getKey());
+        model.addAttribute("pageTitle", "Access history");
+        model.addAttribute("accesses", list);
+        return "key/history";
     }
 
     @GetMapping("/login")

@@ -9,10 +9,10 @@
 		<div class="row">
 			<div class="col-md-10 col-md-offset-1">
 				<div th:if="${#ctx.containsVariable('error')}">
-					<div class="alert alert-danger" th:text="${message}">Failure in adding key</div>
+					<div class="alert alert-danger" th:text="${message}"></div>
 				</div>
 				<div th:unless="${#ctx.containsVariable('error')}">
-					<h1 th:text="${message}">Success in adding key</h1>
+					<h1 th:text="${message}"></h1>
 					<table class="table table-striped" th:object="${license}">
 						<thead>
 							<tr>

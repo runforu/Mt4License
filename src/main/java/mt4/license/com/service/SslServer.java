@@ -2,8 +2,10 @@ package mt4.license.com.service;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+import mt4.license.com.entity.AccessInfo;
 import mt4.license.com.entity.License;
 
 @Configuration
@@ -51,6 +54,26 @@ public class SslServer implements InitializingBean, DisposableBean, Runnable {
             return hash;
         }
 
+        private boolean checkAccess(List<AccessInfo> list, AccessInfo accessInfo) {
+            if (list.size() < 2) {
+                return true;
+            }
+
+            if (accessInfo.getIp().equals(list.get(0).getIp()) && accessInfo.getIp().equals(list.get(1).getIp())) {
+                return true;
+            }
+
+            if (list.size() > 10) {
+                AccessInfo ai = list.get(list.size() - 1);
+                if (accessInfo.getTimestamp().getTime() - ai.getTimestamp().getTime() < Duration.ofDays(list.size() - 1)
+                        .toMillis()) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         @Override
         public void run() {
             try {
@@ -67,7 +90,7 @@ public class SslServer implements InitializingBean, DisposableBean, Runnable {
                 String key = new String(keyInBytes);
                 System.out.println("key:" + key);
                 License license = new License(key);
-                if (!redisService.get(license)) {
+                if (!redisService.getLicense(license)) {
                     dataOutputStream.writeInt(1);
                     dataOutputStream.writeByte(0);
                     return;
@@ -77,6 +100,19 @@ public class SslServer implements InitializingBean, DisposableBean, Runnable {
                     dataOutputStream.writeInt(1);
                     dataOutputStream.writeByte(0);
                     return;
+                }
+
+                AccessInfo accessInfo = new AccessInfo(mSocket.getInetAddress().getHostAddress());
+                List<AccessInfo> list = redisService.range(license, 0, 30);
+                if (!checkAccess(list, accessInfo)) {
+                    dataOutputStream.writeInt(1);
+                    dataOutputStream.writeByte(0);
+                    return;
+                }
+
+                // store access history
+                if (!redisService.push(license, accessInfo)) {
+                    // do nothing
                 }
 
                 // read encrypted key

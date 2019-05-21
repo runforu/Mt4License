@@ -1,3 +1,10 @@
+// Clien/Server use one-way authentication:
+//    - Client add server certificate (c hex code) to its store to verify server and establish connection.
+//    - Server use keystore.p12 which contains server key as its certificate.
+//    - Ssl Server use keystore.p12 too.
+//    
+// client_keystore.p12 client_truststore.p12 are not used
+
 
 // server keystor
 keytool -genkey -v -alias mt4ssl        -storetype PKCS12 -keyalg RSA -keysize 4096 -keystore keystore.p12        -validity 7300

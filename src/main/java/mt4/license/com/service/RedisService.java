@@ -1,5 +1,6 @@
 package mt4.license.com.service;
 
+import java.util.List;
 import java.util.Set;
 
 import mt4.license.com.entity.AccessInfo;
@@ -7,21 +8,22 @@ import mt4.license.com.entity.License;
 
 public interface RedisService {
 
-    public boolean add(License license);
+    public boolean addLicense(License license);
 
-    public boolean get(License license);
+    public boolean getLicense(License license);
 
-    public boolean update(License license);
+    public boolean updateLicense(License license);
 
-    public boolean delete(License license);
+    public boolean deleteLicense(License license);
 
-    public Set<License> searchByKey(String key);
+    public Set<License> searchLicenseByKey(String key);
 
-    public Set<License> listAll();
+    public Set<License> listLicense();
 
-    public Set<License> searchByCompany(String name);
+    public Set<License> searchLicenseByCompany(String name);
 
-    public boolean update(AccessInfo accessInfo);
+    // License access history
+    public boolean push(License license, AccessInfo ai);
 
-    public boolean get(AccessInfo accessInfo);
+    public List<AccessInfo> range(License license, int start, int end);
 }

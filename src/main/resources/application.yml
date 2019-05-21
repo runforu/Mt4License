@@ -1,13 +1,12 @@
 server.port: 443
 
-server.tomcat.max-threads: 64
-server.tomcat.max-connections: 64
+server.tomcat.max-threads: 16
+server.tomcat.max-connections: 16
 
 server.ssl.key-store-type: PKCS12
-server.ssl.key-store: src/main/resources/keystore.p12
+server.ssl.key-store: keystore.p12
 server.ssl.key-alias: mt4ssl
 server.ssl.key-store-password: ZAQ!xsw2cde3
-
 server.ssl.socket.port: 4433
 
 spring.thymeleaf.cache: false
