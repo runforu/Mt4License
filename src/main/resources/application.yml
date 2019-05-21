@@ -7,7 +7,7 @@ server.ssl.key-store-type: PKCS12
 server.ssl.key-store: keystore.p12
 server.ssl.key-alias: mt4ssl
 server.ssl.key-store-password: ZAQ!xsw2cde3
-server.ssl.socket.port: 4433
+server.ssl.socket.port: 523
 
 spring.thymeleaf.cache: false
 spring.thymeleaf.check-template: true
