@@ -15,7 +15,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -61,7 +60,12 @@ public class MainController {
 
     @RequestMapping(value = "/toggle", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<?> toggleState(@RequestBody License license) {
+    public ResponseEntity<?> toggleState(@RequestParam("key") String key) {
+        License license = new License(key);
+        if (!redisService.getLicense(license)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
         license.setEnable(!license.isEnable());
         redisService.deleteAccessInfo(license);
         if (!redisService.updateLicense(license)) {
@@ -71,9 +75,15 @@ public class MainController {
     }
 
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
-    public String delete(Model model, @RequestBody License license) {
-        redisService.deleteLicense(license);
-        model.addAttribute("licenses", redisService.listLicense());
+    public String delete(Model model, @RequestParam("query") String query, @RequestParam("key") String key) {
+        License license = new License(key);
+        if (redisService.getLicense(license)) {
+            redisService.deleteLicense(license);
+            redisService.deleteAccessInfo(license);
+        }
+        Set<License> set = query.startsWith("@") ? redisService.searchLicenseByCompany(query.substring(1))
+                : redisService.searchLicenseByKey(query);
+        model.addAttribute("licenses", set);
         return "key/search::table_refresh";
     }
 

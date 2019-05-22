@@ -21,17 +21,13 @@
             })
         }
 
-        // Get the data of table for future change because the original data [[${licenses}]] cannot be changed.
-        var data = [[${licenses}]];
-
-        function toggle(element, index) {
+        function toggle(element, key) {
             $.post({
                 url: "/toggle",
-                data: JSON.stringify(data[index]),
+                data: "key=" + key,
                 dataType: "json",
-                contentType: "application/json;charset=utf-8",
+                contentType: "application/x-www-form-urlencoded;charset=utf-8",
                 success: function (json) {
-                    data[index].enable = json.enable;
                     $(element).text(json.enable ? 'Disable': 'Enable');
                     $(element).parent().parent().children("td")[5].innerHTML = json.enable ? "<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
                         : "<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>";
@@ -42,18 +38,17 @@
             });
         }
         
-        function deleteLicense(index) {
-            var mymessage = confirm("Do you want to delete key: " + [[${licenses}]][index].key);
+        function deleteLicense(key) {
+            var mymessage = confirm("Do you want to delete key: " + key);
             if(mymessage == false) {
                 return;
             }
             $.post({
                 url: "/delete",
-                data: JSON.stringify([[${licenses}]][index]),
+                data: "query=" + $("#search_input").val() + "&key=" + key,
                 dataType: "html",
-                contentType: "application/json;charset=utf-8",
+                contentType: "application/x-www-form-urlencoded;charset=utf-8",
                 success: function (html) {
-                    data.splice(index, 1);
                     $("#table_refresh").empty();
                     $("#table_refresh").html(html);
                 },
@@ -63,14 +58,14 @@
             });
         }
 
-        function editLicense(index) {
-        	var form= $("<form method='post' action='/edit'><input type='hidden' name='query' value=" + [[${licenses}]][index].key + "></form>");
+        function editLicense(key) {
+        	var form= $("<form method='post' action='/edit'><input type='hidden' name='query' value=" + key + "></form>");
             $(document.body).append(form);
             form.submit();
         }
         
-        function history(index) {
-            var form= $("<form method='post' action='/history'><input type='hidden' name='query' value=" + [[${licenses}]][index].key + "></form>");
+        function history(key) {
+            var form= $("<form method='post' action='/history'><input type='hidden' name='query' value=" + key + "></form>");
             $(document.body).append(form);
             form.submit();
         }
@@ -113,14 +108,14 @@
 										th:unless="${license.enable}" class="glyphicon glyphicon-remove" aria-hidden="true"></span></td>
 								<td>
 									<button type="button" style="padding: 0px; width: 48px; display: inline-block;" class="btn btn-link"
-										th:text="*{license.enable} ? 'Disable' : 'Enable'" th:onclick="toggle(this, [[${licenseStat.index}]]);"></button>
-									<span style="padding: 0px 4px;">|</span>
+										th:text="*{license.enable} ? 'Disable' : 'Enable'" th:onclick="toggle(this, [[*{license.key}]]);"></button> <span
+										style="padding: 0px 4px;">|</span>
 									<button type="submit" style="padding: 0px; width: 28px; display: inline-block;" class="btn btn-link"
-										th:onclick="editLicense([[${licenseStat.index}]]);">Edit</button> <span style="padding: 0px 4px;">|</span>
+										th:onclick="editLicense([[*{license.key}]]);">Edit</button> <span style="padding: 0px 4px;">|</span>
 									<button type="submit" style="padding: 0px; width: 96px; display: inline-block;" class="btn btn-link"
-										th:onclick="history([[${licenseStat.index}]]);">Access History</button> <span style="padding: 0px 4px;">|</span>
+										th:onclick="history([[*{license.key}]]);">Access History</button> <span style="padding: 0px 4px;">|</span>
 									<button type="submit" style="padding: 0px; width: 48px; display: inline-block;" class="btn btn-link"
-										th:onclick="deleteLicense([[${licenseStat.index}]]);">Delete</button>
+										th:onclick="deleteLicense([[*{license.key}]]);">Delete</button>
 								</td>
 							</tr>
 						</tbody>
