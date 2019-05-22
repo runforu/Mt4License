@@ -11,10 +11,11 @@ import lombok.ToString;
 public class AccessInfo implements Serializable {
     private static final long serialVersionUID = -4863638632240421691L;
 
-    public AccessInfo(String ip) {
+    public AccessInfo(String ip, int serialNumber) {
         super();
         this.ip = ip;
-        timestamp = new Date();
+        this.timestamp = new Date();
+        this.serialNumber = serialNumber;
     }
 
     public AccessInfo() {
@@ -22,5 +23,6 @@ public class AccessInfo implements Serializable {
     }
 
     private String ip;
+    private int serialNumber;
     private Date timestamp;
 }

@@ -16,6 +16,8 @@ public interface RedisService {
 
     public boolean deleteLicense(License license);
 
+    public boolean deleteAccessInfo(License license);
+
     public Set<License> searchLicenseByKey(String key);
 
     public Set<License> listLicense();
@@ -26,4 +28,8 @@ public interface RedisService {
     public boolean push(License license, AccessInfo ai);
 
     public List<AccessInfo> range(License license, int start, int end);
+
+    public void trimList(License license, int capacity);
+
+    public AccessInfo getFirst(License license);
 }

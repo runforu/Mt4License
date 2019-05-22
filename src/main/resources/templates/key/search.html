@@ -30,12 +30,32 @@
                 data: JSON.stringify(data[index]),
                 dataType: "json",
                 contentType: "application/json;charset=utf-8",
-                async: false,
                 success: function (json) {
                     data[index].enable = json.enable;
                     $(element).text(json.enable ? 'Disable': 'Enable');
                     $(element).parent().parent().children("td")[5].innerHTML = json.enable ? "<span class='glyphicon glyphicon-ok' aria-hidden='true'></span>"
                         : "<span class='glyphicon glyphicon-remove' aria-hidden='true'></span>";
+                },
+                failure: function () {
+                    location.reload();
+                }
+            });
+        }
+        
+        function deleteLicense(index) {
+            var mymessage = confirm("Do you want to delete key: " + [[${licenses}]][index].key);
+            if(mymessage == false) {
+                return;
+            }
+            $.post({
+                url: "/delete",
+                data: JSON.stringify([[${licenses}]][index]),
+                dataType: "html",
+                contentType: "application/json;charset=utf-8",
+                success: function (html) {
+                    data.splice(index, 1);
+                    $("#table_refresh").empty();
+                    $("#table_refresh").html(html);
                 },
                 failure: function () {
                     location.reload();
@@ -59,7 +79,7 @@
 <body>
 	<div layout:fragment="content" th:remove="tag">
 		<div class="row">
-			<div class="col-md-10 col-md-offset-1">
+			<div class="col-md-12 col-md-offset-0">
 				<form class="form-inline" onsubmit="return false;">
 					<div style="padding: 0px 32px 0px 16px;" class="form-group">
 						<label style="font-size: large; color: #288bf6" for="search_input">Key or Company name</label>
@@ -95,10 +115,12 @@
 									<button type="button" style="padding: 0px; width: 48px; display: inline-block;" class="btn btn-link"
 										th:text="*{license.enable} ? 'Disable' : 'Enable'" th:onclick="toggle(this, [[${licenseStat.index}]]);"></button>
 									<span style="padding: 0px 4px;">|</span>
-									<button type="submit" style="padding: 0px; width: 24px; display: inline-block;" class="btn btn-link"
+									<button type="submit" style="padding: 0px; width: 28px; display: inline-block;" class="btn btn-link"
 										th:onclick="editLicense([[${licenseStat.index}]]);">Edit</button> <span style="padding: 0px 4px;">|</span>
-									<button type="submit" style="padding: 0px; width: 80px; display: inline-block;" class="btn btn-link"
-										th:onclick="history([[${licenseStat.index}]]);">Access History</button>
+									<button type="submit" style="padding: 0px; width: 96px; display: inline-block;" class="btn btn-link"
+										th:onclick="history([[${licenseStat.index}]]);">Access History</button> <span style="padding: 0px 4px;">|</span>
+									<button type="submit" style="padding: 0px; width: 48px; display: inline-block;" class="btn btn-link"
+										th:onclick="deleteLicense([[${licenseStat.index}]]);">Delete</button>
 								</td>
 							</tr>
 						</tbody>

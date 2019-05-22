@@ -18,14 +18,14 @@ import mt4.license.com.service.RedisService;
 public class RedisServiceImpl implements RedisService {
 
     @Resource
-    private RedisTemplate<String, Object> licenseTemplate;
+    private RedisTemplate<String, License> licenseTemplate;
 
     @Resource
     private RedisTemplate<String, AccessInfo> accessInfoTemplate;
 
     @Override
     public boolean addLicense(License license) {
-        ValueOperations<String, Object> vo = licenseTemplate.opsForValue();
+        ValueOperations<String, License> vo = licenseTemplate.opsForValue();
         if (licenseTemplate.hasKey(license.getKey())) {
             return false;
         }
@@ -35,7 +35,7 @@ public class RedisServiceImpl implements RedisService {
 
     @Override
     public boolean getLicense(License license) {
-        ValueOperations<String, Object> vo = licenseTemplate.opsForValue();
+        ValueOperations<String, License> vo = licenseTemplate.opsForValue();
         try {
             License l = (License) vo.get(license.getKey());
             if (l != null) {
@@ -53,7 +53,7 @@ public class RedisServiceImpl implements RedisService {
 
     @Override
     public boolean updateLicense(License license) {
-        ValueOperations<String, Object> vo = licenseTemplate.opsForValue();
+        ValueOperations<String, License> vo = licenseTemplate.opsForValue();
         if (licenseTemplate.hasKey(license.getKey())) {
             vo.set(license.getKey(), license);
             return true;
@@ -63,8 +63,14 @@ public class RedisServiceImpl implements RedisService {
 
     @Override
     public boolean deleteLicense(License license) {
-        ValueOperations<String, Object> vo = licenseTemplate.opsForValue();
+        ValueOperations<String, License> vo = licenseTemplate.opsForValue();
         return vo.getOperations().delete(license.getKey());
+    }
+
+    @Override
+    public boolean deleteAccessInfo(License license) {
+        ValueOperations<String, AccessInfo> vo = accessInfoTemplate.opsForValue();
+        return vo.getOperations().delete(license.getKey() + "_AI");
     }
 
     @Override
@@ -106,7 +112,7 @@ public class RedisServiceImpl implements RedisService {
         if (license.getKey() == null) {
             return false;
         }
-        licenseTemplate.opsForList().leftPush(license.getKey() + "_AI", ai);
+        accessInfoTemplate.opsForList().leftPush(license.getKey() + "_AI", ai);
         return true;
     }
 
@@ -118,10 +124,24 @@ public class RedisServiceImpl implements RedisService {
         return accessInfoTemplate.opsForList().range(license.getKey() + "_AI", start, end);
     }
 
+    @Override
+    public void trimList(License license, int capacity) {
+        if (license.getKey() == null) {
+            return;
+        }
+        accessInfoTemplate.opsForList().trim(license.getKey() + "_AI", 0, capacity);
+        return;
+    }
+
+    @Override
+    public AccessInfo getFirst(License license) {
+        return accessInfoTemplate.opsForList().index(license.getKey() + "_AI", 0);
+    }
+
     private Set<String> getLicenseKeys(String pattern) {
         Set<String> keys = licenseTemplate.keys(pattern);
         keys.removeIf((key) -> {
-            return key.endsWith("_AI") || key.length() < 16;
+            return key.endsWith("_AI") || key.length() != 16;
         });
         return keys;
     }
@@ -129,8 +149,9 @@ public class RedisServiceImpl implements RedisService {
     private Set<String> getAccessInfoKeys(String pattern) {
         Set<String> keys = accessInfoTemplate.keys(pattern);
         keys.removeIf((key) -> {
-            return !key.endsWith("_AI");
+            return !key.endsWith("_AI") || key.length() != 19;
         });
         return keys;
     }
+
 }

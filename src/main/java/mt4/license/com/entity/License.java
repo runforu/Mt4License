@@ -18,6 +18,8 @@ import mt4.license.com.util.Utils;
 @ToString
 public class License implements Serializable {
 
+    private static final long serialVersionUID = -3859874746947862044L;
+
     public License() {
         super();
         key = Utils.getSalt();

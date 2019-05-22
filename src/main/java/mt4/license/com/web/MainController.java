@@ -63,10 +63,18 @@ public class MainController {
     @ResponseBody
     public ResponseEntity<?> toggleState(@RequestBody License license) {
         license.setEnable(!license.isEnable());
+        redisService.deleteAccessInfo(license);
         if (!redisService.updateLicense(license)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         return ResponseEntity.ok(license);
+    }
+
+    @RequestMapping(value = "/delete", method = RequestMethod.POST)
+    public String delete(Model model, @RequestBody License license) {
+        redisService.deleteLicense(license);
+        model.addAttribute("licenses", redisService.listLicense());
+        return "key/search::table_refresh";
     }
 
     @GetMapping("/search")
