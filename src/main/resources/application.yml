@@ -33,3 +33,5 @@ spring.cache.type: REDIS
 spring.cache.redis.cache-null-values: false
 spring.cache.redis.time-to-live: 20
 spring.cache.redis.use-key-prefix: false
+
+logging.file: my.log

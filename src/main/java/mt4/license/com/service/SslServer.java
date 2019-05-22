@@ -12,6 +12,8 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,8 @@ public class SslServer implements InitializingBean, DisposableBean, Runnable {
 
     @Autowired
     private RedisService redisService;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     class Accepter implements Runnable {
         private SSLSocket mSocket = null;
@@ -45,11 +49,11 @@ public class SslServer implements InitializingBean, DisposableBean, Runnable {
                 int len = dataInputStream.readInt();
                 byte[] keyInBytes = new byte[len];
                 dataInputStream.read(keyInBytes);
-                System.out.println(Utils.byteArrayToHexString(keyInBytes));
+                logger.info(Utils.byteArrayToHexString(keyInBytes));
 
                 // Get license object
                 String key = new String(keyInBytes);
-                System.out.println("key:" + key);
+                logger.info("key:" + key);
                 License license = new License(key);
                 if (!redisService.getLicense(license)) {
                     dataOutputStream.writeInt(1);
@@ -88,12 +92,12 @@ public class SslServer implements InitializingBean, DisposableBean, Runnable {
                 len = dataInputStream.readInt();
                 byte[] encryptedKey = new byte[len];
                 dataInputStream.read(encryptedKey);
-                System.out.println(Utils.byteArrayToHexString(encryptedKey));
+                logger.info(Utils.byteArrayToHexString(encryptedKey));
 
                 // calculate encrypted text based on key and port.
                 int port = mSocket.getPort();
                 byte[] hash = Pbdf2(new String(keyInBytes).toCharArray(), keyInBytes, port);
-                System.out.println(Utils.byteArrayToHexString(hash));
+                logger.info(Utils.byteArrayToHexString(hash));
 
                 if (!Arrays.equals(hash, encryptedKey)) {
                     dataOutputStream.writeInt(1);
@@ -103,7 +107,7 @@ public class SslServer implements InitializingBean, DisposableBean, Runnable {
 
                 // write new encrypted text to client
                 byte[] output = Pbdf2(new String(keyInBytes).toCharArray(), keyInBytes, (port + 9) / 3);
-                System.out.println(Utils.byteArrayToHexString(output));
+                logger.info(Utils.byteArrayToHexString(output));
                 dataOutputStream.writeInt(output.length);
                 dataOutputStream.write(output);
             } catch (Exception e) {
